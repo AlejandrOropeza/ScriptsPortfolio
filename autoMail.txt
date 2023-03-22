@@ -1,0 +1,17 @@
+//Este script envía un correo electrónico automático, obtiene el correo de la columna C, el asunto de la columna A y el contenido del correo de la columna B
+
+function autoMail() {
+
+var spdst = SpreadsheetApp.getActiveSpreadsheet();
+var spdstmails = spdst.getSheetByName("Hoja 1");
+
+var lastRow = spdstmails.getLastRow(); // Obtiene la última fila utilizada en la hoja
+var emailData = spdstmails.getRange("A2:C" + lastRow).getValues(); // Obtiene los datos de la columna A, B y C desde la segunda fila hasta la última utilizada
+
+for (var i = 0; i < emailData.length; i++) {
+var subject = emailData[i][0];
+var message = emailData[i][1];
+var emailaddress = emailData[i][2];
+MailApp.sendEmail(emailaddress, subject, message);
+}
+}
