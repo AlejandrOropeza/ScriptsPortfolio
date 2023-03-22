@@ -1,0 +1,37 @@
+function importXML() {
+  var url = "https://publicacionexterna.azurewebsites.net/publicaciones/places";
+  var xml = UrlFetchApp.fetch(url).getContentText();
+  var document = XmlService.parse(xml);
+  var root = document.getRootElement();
+  var rows = root.getChildren("place");
+
+  // Buscar la hoja de cálculo por su nombre
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = "Hoja 1";
+  var sheet = spreadsheet.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(sheetName);
+  }
+
+  var data = [[]]; // Inicializar con una fila vacía para evitar el error de 'length'
+
+  rows.forEach(function(row) {
+    var place_id = row.getAttribute("place_id").getValue();
+    var name = row.getChild("name").getText();
+    var cre_id = row.getChild("cre_id").getText();
+    var x = row.getChild("location").getChild("x").getText();
+    var y = row.getChild("location").getChild("y").getText();
+
+    data.push([place_id, name, cre_id, x, y]);
+  });
+
+  // Eliminar la fila vacía que se agregó al inicio del array
+  data.shift();
+
+  if (data.length > 0) {
+    // Establecer los valores en la hoja de destino
+    sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+  } else {
+    Logger.log("No se encontraron datos para importar.");
+  }
+}
