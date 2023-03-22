@@ -1,3 +1,5 @@
+// Script para importar el archivo XML de la página https://publicacionexterna.azurewebsites.net/publicaciones/places a una hoja de cálculo en Google Sheets
+// Debido a que el tamaño del archivo era muy grande, no se pudo usar la función IMPORTXML de Google Sheets y se tuvo que crear este script
 function importXML() {
   var url = "https://publicacionexterna.azurewebsites.net/publicaciones/places";
   var xml = UrlFetchApp.fetch(url).getContentText();
