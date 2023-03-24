@@ -1,0 +1,58 @@
+// Este script de geocodificación inversa te ayuda a encontrar el estado de la república Mexicana en el que se encuentran las coordenadas en la hoja de cálculo
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+var sheet = ss.getActiveSheet();
+var dataRangeAll = sheet.getDataRange();
+var ultimaFila = dataRangeAll.getLastRow();
+
+function onOpen() {  
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Geocodificación')
+      .addItem('Convertir coordenadas en direcciones', 'geocodificacion_inversa')
+      .addToUi();
+}
+
+// Geocodificar inversamente todas las filas a partir de la 2da
+function geocodificacion_inversa() {
+  var filaInicial = 2;
+  var dataRange = sheet.getRange(filaInicial, 1, ultimaFila - filaInicial + 1, 6);
+  var data = dataRange.getValues();
+
+  // Recorremos todas las filas del rango
+  for(var i=0; i< data.length; i++) {
+    var fila = data[i];
+
+    var latitud = fila[4];
+    var longitud = fila[3];
+
+    // Solamente haremos algo si no están vacías las coordenadas, 
+    // para no generar errores inesperados
+    if(latitud != "" && longitud != "") {
+      // Aquí es donde nos conectamos con Google Maps
+      var reverseGeocoder = Maps.newGeocoder().reverseGeocode(latitud, longitud);
+      var resultado = reverseGeocoder.results[0];
+
+      var direccion = "";
+
+      // Si el geocoder de Google Maps nos devuelve un resultado satisfactorio, 
+      // escribimos la dirección en las celdas correspondientes a la fila
+      if(resultado) {
+        // Aquí modificamos el código para que solo obtenga el estado de la república
+        var componentesDireccion = resultado.address_components;
+        for (var j = 0; j < componentesDireccion.length; j++) {
+          var componente = componentesDireccion[j];
+          if (componente.types.indexOf("administrative_area_level_1") !== -1) {
+            direccion = componente.long_name;
+            break;
+          }
+        }
+        // Agregamos una condición para saltar filas que ya tienen un valor en la columna F
+        var filaActual = filaInicial + i;
+        var columnaF = 6; // Columna F
+        var valorActual = sheet.getRange(filaActual, columnaF).getValue();
+        if (valorActual === "") {
+          sheet.getRange(filaActual, columnaF).setValue(direccion);
+        }
+      }
+    }
+  }
+}
